@@ -100,6 +100,7 @@ var maxPlayerCount = -1;
 var gameSessionId;
 var userSessionId;
 var serverPublicIp;
+var listenAddress; // undefined = all interfaces
 
 // `clientConfig` is send to Streamer and Players
 // Example of STUN server setting
@@ -154,6 +155,12 @@ try {
 
 	if (typeof config.MaxPlayerCount != 'undefined') {
 		maxPlayerCount = config.MaxPlayerCount;
+	}
+
+	// Optional: bind every listener to a single address (e.g. "127.0.0.1" for a machine-local test).
+	// When not set, listeners bind to all interfaces as before.
+	if (typeof config.ListenAddress != 'undefined' && config.ListenAddress !== '') {
+		listenAddress = config.ListenAddress.toString();
 	}
 } catch (e) {
 	console.error(e);
@@ -258,12 +265,12 @@ if(config.EnableWebserver) {
 }
 
 //Setup http and https servers
-http.listen(httpPort, function () {
-	console.logColor(logging.Green, 'Http listening on *: ' + httpPort);
+http.listen(httpPort, listenAddress, function () {
+	console.logColor(logging.Green, 'Http listening on ' + (listenAddress || '*') + ': ' + httpPort);
 });
 
 if (config.UseHTTPS) {
-	https.listen(httpsPort, function () {
+	https.listen(httpsPort, listenAddress, function () {
 		console.logColor(logging.Green, 'Https listening on *: ' + httpsPort);
 	});
 }
@@ -328,7 +335,7 @@ let WebSocket = require('ws');
 const { URL } = require('url');
 
 console.logColor(logging.Green, `WebSocket listening for Streamer connections on :${streamerPort}`)
-let streamerServer = new WebSocket.Server({ port: streamerPort, backlog: 1 });
+let streamerServer = new WebSocket.Server({ port: streamerPort, host: listenAddress, backlog: 1 });
 streamerServer.on('connection', function (ws, req) {
 
 	// Check if we have an already existing connection to a streamer, if so, deny a new streamer connecting.
@@ -428,7 +435,7 @@ streamerServer.on('connection', function (ws, req) {
 });
 
 console.logColor(logging.Green, `WebSocket listening for SFU connections on :${sfuPort}`);
-let sfuServer = new WebSocket.Server({ port: sfuPort});
+let sfuServer = new WebSocket.Server({ port: sfuPort, host: listenAddress });
 sfuServer.on('connection', function (ws, req) {
 	// reject if we already have an sfu
 	if (sfuIsConnected()) {

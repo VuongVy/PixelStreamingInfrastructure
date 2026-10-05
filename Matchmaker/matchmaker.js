@@ -48,8 +48,11 @@ if (typeof argv.MatchmakerPort != 'undefined') {
 	config.MatchmakerPort = argv.MatchmakerPort;
 }
 
-http.listen(config.HttpPort, () => {
-    console.log('HTTP listening on *:' + config.HttpPort);
+// Optional: bind to a single address (e.g. "127.0.0.1" for a machine-local test). Default: all interfaces.
+const listenAddress = (typeof config.ListenAddress != 'undefined' && config.ListenAddress !== '') ? config.ListenAddress.toString() : undefined;
+
+http.listen(config.HttpPort, listenAddress, () => {
+    console.log('HTTP listening on ' + (listenAddress || '*') + ':' + config.HttpPort);
 });
 
 
@@ -81,7 +84,7 @@ if (config.UseHTTPS) {
 		next();
 	});
 
-	https.listen(443, function () {
+	https.listen(443, listenAddress, function () {
 		console.log('Https listening on 443');
 	});
 }
@@ -290,6 +293,6 @@ const matchmaker = net.createServer((connection) => {
 	});
 });
 
-matchmaker.listen(config.MatchmakerPort, () => {
-	console.log('Matchmaker listening on *:' + config.MatchmakerPort);
+matchmaker.listen(config.MatchmakerPort, listenAddress, () => {
+	console.log('Matchmaker listening on ' + (listenAddress || '*') + ':' + config.MatchmakerPort);
 });
