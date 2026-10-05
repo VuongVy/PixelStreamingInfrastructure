@@ -159,6 +159,8 @@ Ví dụ với cấu hình mặc định, instance `i = 1..N`:
 
 Máy UE **không cần mở port inbound nào**. Chỉ cần được phép kết nối ra server tới TCP `888x` và UDP `3478`, `49152–65535`.
 
+Danh sách rule firewall gửi IT (có giải thích từng dải port): [port_request_for_IT.md](port_request_for_IT.md).
+
 ---
 
 ## 7. Triển khai lên server riêng
@@ -264,7 +266,7 @@ Code Epic không bị sửa (việc giới hạn địa chỉ listen nằm trong
 ## 13. Việc còn mở
 
 - [ ] Test **relay-only** trên server thật, với UE ở máy riêng. Không test được ở local (xem mục 4).
-- [ ] Cập nhật tài liệu xin port cho IT: bỏ port 9999, đổi tên Cirrus thành Wilbur.
+- [x] Cập nhật tài liệu xin port cho IT: [port_request_for_IT.md](port_request_for_IT.md).
 - [ ] Thêm reverse proxy + HTTPS, chặn `/api/*` từ bên ngoài.
 - [ ] Đổi thông tin đăng nhập TURN, cân nhắc dùng `--turn_secret` (credential có thời hạn) của Wilbur.
 - [ ] (Sau này) Đóng gói Matchmaker và Wilbur bằng Docker/k8s. coturn chạy `hostNetwork`, UE vẫn chạy native trên máy có GPU.
