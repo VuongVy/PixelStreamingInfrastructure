@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>TURN relay self-test</title>
+<meta name="description" content="Checks that the local TURN server can relay WebRTC traffic between two peers forced to relay-only.">
+<style>
+	body { font-family: Consolas, monospace; background: #111; color: #ddd; padding: 24px; }
+	h1 { font-size: 18px; color: #7fd1ff; }
+	#result { font-size: 20px; margin: 16px 0; }
+	.ok { color: #6be38a; } .fail { color: #ff6b6b; }
+	pre { background: #1b1b1b; padding: 12px; border-radius: 6px; max-height: 60vh; overflow: auto; }
+	input { background: #222; color: #ddd; border: 1px solid #444; padding: 4px 8px; width: 260px; }
+	button { padding: 4px 12px; }
+</style>
+</head>
+<body>
+<h1>TURN relay self-test (2 peers, iceTransportPolicy = relay)</h1>
+<label>TURN <input id="turnUrl" value="turn:127.0.0.1:3478?transport=udp"></label>
+<label>user <input id="user" value="PixelStreamingUser" style="width:160px"></label>
+<label>pass <input id="pass" value="AnotherTURNintheroad" style="width:180px"></label>
+<button id="runBtn">Run</button>
+<div id="result">pending...</div>
+<pre id="log"></pre>
+<script>
+// Two RTCPeerConnections in this page, both forced to use only TURN relay candidates.
+// If the data channel opens and a message round-trips, the TURN server relays correctly.
+const logEl = document.getElementById('log');
+const resultEl = document.getElementById('result');
+function log(m) { logEl.textContent += m + '\n'; }
+function done(ok, msg) { resultEl.textContent = (ok ? 'PASS: ' : 'FAIL: ') + msg; resultEl.className = ok ? 'ok' : 'fail'; }
+
+async function run() {
+	logEl.textContent = ''; resultEl.textContent = 'running...'; resultEl.className = '';
+	const cfg = {
+		iceServers: [{ urls: [document.getElementById('turnUrl').value], username: document.getElementById('user').value, credential: document.getElementById('pass').value }],
+		iceTransportPolicy: 'relay'
+	};
+	const a = new RTCPeerConnection(cfg), b = new RTCPeerConnection(cfg);
+	let relayCount = 0;
+	const wire = (from, to, name) => {
+		from.onicecandidate = (e) => {
+			if (!e.candidate) return;
+			log(`${name} candidate: ${e.candidate.candidate}`);
+			if (e.candidate.candidate.includes(' typ relay')) relayCount++;
+			to.addIceCandidate(e.candidate);
+		};
+		from.onicecandidateerror = (e) => log(`${name} ICE error ${e.errorCode} ${e.errorText} (${e.url})`);
+		from.oniceconnectionstatechange = () => log(`${name} ice state: ${from.iceConnectionState}`);
+	};
+	wire(a, b, 'A'); wire(b, a, 'B');
+
+	const timer = setTimeout(() => done(false, `timeout, relay candidates gathered: ${relayCount}`), 15000);
+	b.ondatachannel = (e) => { e.channel.onmessage = (m) => e.channel.send('pong:' + m.data); };
+	const dc = a.createDataChannel('test');
+	dc.onopen = () => { log('data channel open'); dc.send('ping'); };
+	dc.onmessage = async (m) => {
+		clearTimeout(timer);
+		const stats = await a.getStats();
+		let pair = '';
+		stats.forEach((s) => {
+			if (s.type === 'candidate-pair' && s.state === 'succeeded' && s.nominated) {
+				const l = stats.get(s.localCandidateId), r = stats.get(s.remoteCandidateId);
+				pair = `${l.candidateType} ${l.address}:${l.port} <-> ${r.candidateType} ${r.address}:${r.port}`;
+			}
+		});
+		log('selected pair: ' + pair);
+		done(m.data === 'pong:ping', `message relayed via TURN (${pair})`);
+	};
+
+	const offer = await a.createOffer(); await a.setLocalDescription(offer); await b.setRemoteDescription(offer);
+	const answer = await b.createAnswer(); await b.setLocalDescription(answer); await a.setRemoteDescription(answer);
+}
+document.getElementById('runBtn').onclick = run;
+run();
+</script>
+</body>
+</html>

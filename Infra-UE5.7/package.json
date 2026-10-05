@@ -1,0 +1,62 @@
+{
+    "name": "pixelstreaming-infrastructure",
+    "workspaces": [
+        "Common",
+        "Frontend/library",
+        "Frontend/ui-library",
+        "Frontend/implementations/typescript",
+        "Frontend/implementations/react",
+        "Signalling",
+        "SignallingWebServer",
+        "SFU",
+        "Extras/JSStreamer",
+        "Extras/FrontendTests",
+        "Extras/MinimalStreamTester",
+        "Extras/SS_Test",
+        "Extras/mediasoup-sdp-bridge"
+    ],
+    "private": true,
+    "scripts": {
+        "changeset": "npx @changesets/cli",
+        "clean": "npm run clean --ws",
+        "build": "npm run build --ws",
+        "build:all:cjs": "cd Common && npm run build:cjs && cd ../Signalling && npm run build:cjs && cd ../SignallingWebServer && npm run build && cd ../Frontend/library && npm run build:cjs && cd ../ui-library && npm run build:cjs && cd ../implementations/typescript && npm run build:dev",
+        "build:all:esm": "cd Common && npm run build:esm && cd ../Signalling && npm run build:esm && cd ../SignallingWebServer && npm run build && cd ../Frontend/library && npm run build:esm && cd ../ui-library && npm run build:esm && cd ../implementations/typescript && npm run build:esm",
+        "pre-commit-lint": "lint-staged",
+        "lint": "npm run lint --ws"
+    },
+    "pre-commit": [
+        "pre-commit-lint"
+    ],
+    "devDependencies": {
+        "@changesets/cli": "2.31.1",
+        "@types/node": "^22.20.4",
+        "eslint": "9.39.1",
+        "eslint-plugin-prettier": "^5.5.0",
+        "lint-staged": "^15.3.0",
+        "pre-commit": "^1.0.10",
+        "typescript": "^5.7.3",
+        "typescript-eslint": "8.70.1"
+    },
+    "overrides": {
+        "cross-spawn": ">=6.0.6",
+        "glob": ">=7.2.3",
+        "serialize-javascript": "7.0.5",
+        "tar": "^7.5.22",
+        "handlebars": "4.7.9",
+        "test-exclude": "^7.0.2",
+        "uuid": "^14.0.0",
+        "ws@^8": "^8.20.1",
+        "qs@^6": "^6.15.2",
+        "webpack-dev-server@^5": "^5.2.4",
+        "brace-expansion@^5": "^5.0.8",
+        "fast-uri@^3": "^3.1.4",
+        "shell-quote": "^1.10.0",
+        "launch-editor": "^2.14.1",
+        "js-yaml@^3": "^3.15.1",
+        "js-yaml@^4": "^4.3.1",
+        "@babel/core": "^7.29.6",
+        "browserslist@^4": "^4.28.7"
+    },
+    "dependencies": {}
+}

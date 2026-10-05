@@ -1,0 +1,1 @@
+{ "name": "ps-node-turn", "version": "1.0.0", "private": true, "description": "Fallback TURN server for local testing when coturn is unavailable", "dependencies": { "node-turn": "0.0.6" } }

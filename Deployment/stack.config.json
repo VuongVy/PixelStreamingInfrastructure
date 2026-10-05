@@ -1,0 +1,36 @@
+{
+	"Mode": "local",
+
+	"ServerIp": "auto",
+	"PublicIp": "",
+
+	"InstanceCount": 2,
+
+	"Matchmaker": {
+		"HttpPort": 80
+	},
+
+	"Signalling": {
+		"HttpPortBase": 8000,
+		"StreamerPortBase": 8880,
+		"SfuPortBase": 8980
+	},
+
+	"Turn": {
+		"Enabled": true,
+		"Engine": "node-turn",
+		"Port": 3478,
+		"MinPort": 49152,
+		"MaxPort": 65535,
+		"Realm": "PixelStreaming",
+		"User": "PixelStreamingUser",
+		"Password": "AnotherTURNintheroad",
+		"ForceRelay": true
+	},
+
+	"UE": {
+		"Exe": "",
+		"ExtraArgs": "-RenderOffScreen -ResX=1920 -ResY=1080 -ForceRes -AudioMixer",
+		"LegacyArgs": false
+	}
+}
